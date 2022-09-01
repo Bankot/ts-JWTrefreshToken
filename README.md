@@ -1,3 +1,2 @@
-In this repo im using jwt, express and express-session to build refresh token logic.
-I find it as a really good way to safely authenticate users, since theres no any sensitive informations in localstorage or cookies (cause they are httponly).
-Happy reading!
+In this program im using JWT, MongoDB, bcrypt, express, and some other packages to create the simplest implementation of refresh token, just to try how it works.
+I know that error handling, status codes, and some other things arent the best here, and i might update them in near future, but I wanted to focus just on how Cookies work, and how to use them to create a good authentication system. Happy reading!

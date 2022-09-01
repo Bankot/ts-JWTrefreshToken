@@ -5,6 +5,7 @@ import mongoose from "mongoose"
 type UserType = {
 	email: string
 	password: string
+	refreshToken: string
 }
 const UserSchema = new mongoose.Schema<UserType>({
 	email: {
@@ -15,6 +16,9 @@ const UserSchema = new mongoose.Schema<UserType>({
 	password: {
 		type: String,
 		required: [true, "You have to insert password!"],
+	},
+	refreshToken: {
+		type: String,
 	},
 })
 export const UserModel = mongoose.model<UserType>("User", UserSchema)
