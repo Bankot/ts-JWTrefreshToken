@@ -3,7 +3,7 @@ import mongoose from "mongoose"
 import userRouter from "./routes/userRoutes"
 import cookieParser from "cookie-parser"
 import dotenv from "dotenv"
-
+import logger from "./logger/logger"
 // setup env file
 dotenv.config()
 
@@ -19,4 +19,6 @@ mongoose
 	.then(() => {
 		app.listen(3000, () => console.log("Listening on port 3000..."))
 	})
-	.catch((error) => console.log(error))
+	.catch((err) =>
+		logger.error(typeof err.message === "string" ? err.message : err)
+	)

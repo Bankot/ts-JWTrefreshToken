@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express"
 import { UserModel } from "../db/Models"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-import { ObjectId } from "mongoose"
+import logger from "../logger/logger"
 import dotenv from "dotenv"
 import signJwt from "../utils/signJWT"
 import cookieCreator from "../utils/addTokenCookies"
@@ -28,7 +28,10 @@ const loginController = async (
 	// compare given password with password in database
 	bcrypt.compare(password, foundUser.password, async (err, response) => {
 		// i know it's not the best error handling but its enough for now
-		if (err) return res.status(404).send(err)
+		if (err) {
+			logger.error(typeof err.message === "string" ? err.message : err)
+			return res.status(404).send(err)
+		}
 		if (response) {
 			// here we will send tokens
 			// access token:
@@ -52,7 +55,8 @@ const loginController = async (
 					{ email: email },
 					{ refreshToken: refreshToken }
 				)
-			} catch (error) {
+			} catch (err: any) {
+				logger.error(typeof err.message === "string" ? err.message : err)
 				return res.status(400).send("Some error occured!")
 			}
 
@@ -82,12 +86,17 @@ const signupController = async (
 	//generate salt
 	const salt = await bcrypt.genSalt(Number(process.env.SALT))
 	// ofc we are gonna store hashed passwords in our db
-	await UserModel.create({
-		email: email,
-		password: await bcrypt.hash(password, salt),
-	})
-	res.send("Succesfully added a user!")
-	// then redirect to login page, or send request to /login
+	try {
+		await UserModel.create({
+			email: email,
+			password: await bcrypt.hash(password, salt),
+		})
+		res.send("Succesfully added a user!")
+		// then redirect to login page, or send request to /login
+	} catch (err: any) {
+		logger.error(typeof err.message === "string" ? err.message : err)
+		return res.status(400).send(err)
+	}
 }
 const refreshToken = async (
 	req: Request,
@@ -108,9 +117,12 @@ const refreshToken = async (
 	jwt.verify(
 		refreshToken,
 		process.env.REFRESH_SECRET!,
-		(error: any, decoded: any) => {
+		(err: any, decoded: any) => {
 			// dummy error handler
-			if (error) return res.status(400).send(error)
+			if (err) {
+				logger.error(typeof err.message === "string" ? err.message : err)
+				return res.status(400).send(err)
+			}
 			// if that's not valid JWT, lets redirect to login page
 			if (!decoded) return res.status(401).send("Please log in!")
 			// finally if thats correct jwt, lets create a new access token, and push it to the browser as a cookie
